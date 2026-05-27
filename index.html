@@ -114,6 +114,10 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
 .closing-title em { font-style: italic; color: var(--accent); }
 footer { padding: 2rem 3rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 .footer-mark { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; color: var(--dim); }
+#fs-btn { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg); color: var(--fg); cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; box-shadow: 0 4px 18px rgba(14,14,12,0.12); transition: background 0.2s, color 0.2s, transform 0.2s; }
+#fs-btn:hover { background: var(--fg); color: var(--bg); transform: scale(1.06); }
+#fs-btn svg { width: 16px; height: 16px; }
+:fullscreen #fs-btn { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 #anatomy { background: var(--bg); padding: 0; position: relative; }
 .anatomy-track { position: relative; height: 320vh; }
 .anatomy-stage { position: sticky; top: 0; height: 100vh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 3rem; overflow: hidden; }
@@ -513,6 +517,11 @@ footer { padding: 2rem 3rem; border-top: 1px solid var(--border); display: flex;
   </h2>
 </section>
 
+<button id="fs-btn" aria-label="Toggle fullscreen" title="Fullscreen (F)">
+  <svg id="fs-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+  <svg id="fs-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
+</button>
+
 <footer>
   <span class="footer-mark">GADget &middot; 2026 &middot; Day 2</span>
   <span class="footer-mark" style="font-style: italic;">No needle. No patch. No compromise.</span>
@@ -562,6 +571,27 @@ footer { padding: 2rem 3rem; border-top: 1px solid var(--border); display: flex;
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
   tick();
+
+  // Fullscreen toggle
+  const fsBtn = document.getElementById('fs-btn');
+  const fsOpen = document.getElementById('fs-icon-open');
+  const fsClose = document.getElementById('fs-icon-close');
+  function toggleFs() {
+    if (!document.fullscreenElement) {
+      (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen).call(document.documentElement);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    }
+  }
+  fsBtn.addEventListener('click', toggleFs);
+  document.addEventListener('fullscreenchange', () => {
+    const on = !!document.fullscreenElement;
+    fsOpen.style.display = on ? 'none' : '';
+    fsClose.style.display = on ? '' : 'none';
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'f' || e.key === 'F') { if (!/input|textarea/i.test(e.target.tagName)) toggleFs(); }
+  });
 </script>
 </body>
 </html>
