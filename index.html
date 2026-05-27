@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GADget — The Glucose Problem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f8f7f4; --fg: #0e0e0c; --mid: #6b6b65; --dim: #aaa9a2;
+  --accent: #c8462b; --border: #e2e0d9;
+  --mono: 'DM Mono', monospace; --serif: 'EB Garamond', Georgia, serif;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--fg); font-family: var(--serif); font-size: 18px; line-height: 1.7; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 3rem; background: var(--bg); border-bottom: 1px solid transparent; transition: border-color 0.3s; }
+nav.scrolled { border-color: var(--border); }
+.nav-mark { font-family: var(--mono); font-size: 0.7rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); }
+.nav-links { display: flex; gap: 2.5rem; list-style: none; }
+.nav-links a { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--fg); }
+#hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; padding: 0; position: relative; }
+.hero-inner { max-width: 780px; margin: 0 auto; padding: 0 2rem 5rem; width: 100%; }
+.hero-eyebrow { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.8s 0.2s forwards; }
+.hero-title { font-family: var(--serif); font-size: clamp(3.2rem, 7vw, 5.8rem); font-weight: 500; line-height: 1.08; letter-spacing: -0.02em; margin-bottom: 2rem; opacity: 0; animation: fadeUp 0.8s 0.35s forwards; }
+.hero-title em { font-style: italic; color: var(--accent); }
+.hero-sub { font-family: var(--serif); font-size: 1.15rem; color: var(--mid); max-width: 540px; line-height: 1.75; opacity: 0; animation: fadeUp 0.8s 0.5s forwards; }
+.hero-scroll { position: absolute; bottom: 2.5rem; right: 3rem; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--dim); writing-mode: vertical-rl; display: flex; align-items: center; gap: 0.6rem; opacity: 0; animation: fadeIn 1s 1s forwards; }
+.hero-scroll::after { content: ''; width: 1px; height: 40px; background: var(--dim); }
+section { padding: 7rem 0; }
+.container { max-width: 780px; margin: 0 auto; padding: 0 2rem; }
+.container-wide { max-width: 1060px; margin: 0 auto; padding: 0 2rem; }
+.label { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin-bottom: 2.5rem; display: flex; align-items: center; gap: 1rem; }
+.label::after { content: ''; flex: 1; height: 1px; background: var(--border); max-width: 60px; }
+hr { border: none; border-top: 1px solid var(--border); margin: 0; }
+#scale { background: var(--fg); color: var(--bg); }
+#scale .label { color: rgba(248,247,244,0.3); }
+#scale .label::after { background: rgba(248,247,244,0.12); }
+.scale-intro { font-size: clamp(1.5rem, 2.8vw, 2.1rem); font-weight: 400; line-height: 1.55; margin-bottom: 5rem; color: rgba(248,247,244,0.88); max-width: 680px; }
+.scale-intro strong { color: #f8f7f4; }
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 1px solid rgba(248,247,244,0.1); margin-bottom: 5rem; }
+.stat-item { padding: 2.5rem 0; border-right: 1px solid rgba(248,247,244,0.1); }
+.stat-item:last-child { border-right: none; }
+.stat-item + .stat-item { padding-left: 2rem; }
+.stat-num { font-family: var(--serif); font-size: clamp(2.5rem, 4.5vw, 4rem); font-weight: 500; line-height: 1; margin-bottom: 0.5rem; }
+.stat-accent { color: var(--accent); }
+.stat-desc { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; color: rgba(248,247,244,0.38); text-transform: uppercase; line-height: 1.65; }
+.evidence-list { display: flex; flex-direction: column; gap: 0; border-top: 1px solid rgba(248,247,244,0.1); margin-bottom: 5rem; }
+.evidence-item-dark { display: grid; grid-template-columns: 2.5rem 1fr auto; gap: 1.5rem; align-items: baseline; padding: 1.6rem 0; border-bottom: 1px solid rgba(248,247,244,0.1); }
+.ev-num { font-family: var(--mono); font-size: 0.58rem; color: rgba(248,247,244,0.25); letter-spacing: 0.1em; }
+.ev-text-dark { font-size: 1rem; color: rgba(248,247,244,0.75); line-height: 1.65; }
+.ev-text-dark strong { color: #f8f7f4; font-weight: 600; }
+.ev-text-dark em { font-style: italic; color: rgba(248,247,244,0.45); }
+.ev-source { font-family: var(--mono); font-size: 0.55rem; color: rgba(248,247,244,0.22); letter-spacing: 0.08em; text-align: right; white-space: nowrap; }
+#pain { background: var(--bg); }
+.pain-lead { font-size: clamp(1.4rem, 2.5vw, 2rem); font-weight: 400; line-height: 1.55; margin-bottom: 4rem; }
+.pain-lead em { font-style: italic; color: var(--accent); }
+.evidence-list-light { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--border); margin-bottom: 4rem; }
+.evidence-item-light { display: grid; grid-template-columns: 2.5rem 1fr auto; gap: 1.5rem; align-items: baseline; padding: 1.6rem 0; border-bottom: 1px solid var(--border); }
+.ev-num-light { font-family: var(--mono); font-size: 0.58rem; color: var(--dim); letter-spacing: 0.1em; }
+.ev-text-light { font-size: 1rem; color: var(--fg); line-height: 1.65; }
+.ev-text-light strong { font-weight: 600; }
+.ev-text-light em { font-style: italic; color: var(--mid); }
+.ev-source-light { font-family: var(--mono); font-size: 0.55rem; color: var(--dim); letter-spacing: 0.08em; text-align: right; white-space: nowrap; }
+.pull-quote { border-left: 2px solid var(--accent); padding: 1.5rem 0 1.5rem 2.5rem; margin: 4rem 0; }
+.pull-quote p { font-family: var(--serif); font-size: clamp(1.2rem, 2vw, 1.6rem); font-style: italic; font-weight: 400; line-height: 1.55; color: var(--fg); }
+.pull-quote cite { display: block; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); font-style: normal; margin-top: 1rem; }
+#behaviour { background: #f0ede6; }
+#behaviour .label::after { background: var(--border); }
+.behaviour-intro { font-size: clamp(1.4rem, 2.5vw, 2rem); font-weight: 400; line-height: 1.55; margin-bottom: 4rem; }
+.behaviour-intro em { font-style: italic; color: var(--accent); }
+.behaviour-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); margin-bottom: 4rem; }
+.beh-card { background: #f0ede6; padding: 2.5rem; }
+.beh-pct { font-family: var(--serif); font-size: clamp(2.8rem, 5vw, 4.2rem); font-weight: 500; line-height: 1; margin-bottom: 0.5rem; color: var(--accent); }
+.beh-desc { font-size: 0.95rem; color: var(--mid); line-height: 1.7; }
+.beh-desc strong { color: var(--fg); }
+.beh-source { font-family: var(--mono); font-size: 0.55rem; color: var(--dim); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 1rem; }
+.consequence-block { border: 1px solid var(--border); padding: 2.5rem 3rem; background: var(--bg); }
+.consequence-title { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 1.5rem; }
+.consequence-item { display: flex; align-items: baseline; gap: 1.2rem; padding: 1rem 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; color: var(--mid); }
+.consequence-item:last-child { border-bottom: none; }
+.consequence-item::before { content: '\2192'; font-family: var(--mono); color: var(--accent); flex-shrink: 0; font-size: 0.75rem; }
+#existing { background: var(--fg); color: var(--bg); }
+#existing .label { color: rgba(248,247,244,0.3); }
+#existing .label::after { background: rgba(248,247,244,0.12); }
+.existing-intro { font-size: clamp(1.3rem, 2.3vw, 1.9rem); font-weight: 400; line-height: 1.55; margin-bottom: 4rem; color: rgba(248,247,244,0.88); }
+.compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid rgba(248,247,244,0.1); border-left: 1px solid rgba(248,247,244,0.1); margin-bottom: 4rem; }
+.compare-col { border-right: 1px solid rgba(248,247,244,0.1); border-bottom: 1px solid rgba(248,247,244,0.1); }
+.compare-head { padding: 1.5rem 1.5rem 1rem; border-bottom: 1px solid rgba(248,247,244,0.1); }
+.compare-product { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(248,247,244,0.35); margin-bottom: 0.5rem; }
+.compare-price { font-family: var(--serif); font-size: 1.8rem; font-weight: 500; color: #f8f7f4; }
+.compare-period { font-family: var(--mono); font-size: 0.55rem; color: rgba(248,247,244,0.3); letter-spacing: 0.08em; margin-top: 0.15rem; }
+.compare-rows { padding: 0.5rem 0; }
+.compare-row { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.5rem; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.06em; color: rgba(248,247,244,0.35); text-transform: uppercase; border-bottom: 1px solid rgba(248,247,244,0.05); }
+.compare-row:last-child { border-bottom: none; }
+.cr-val { font-family: var(--mono); font-size: 0.75rem; }
+.cr-yes { color: rgba(100,220,160,0.75); }
+.cr-no { color: rgba(255,80,80,0.65); }
+.compare-fatal { padding: 1.2rem 1.5rem; background: rgba(200,70,43,0.07); border-top: 1px solid rgba(200,70,43,0.18); }
+.cf-label { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem; }
+.cf-text { font-size: 0.88rem; color: rgba(248,247,244,0.5); line-height: 1.6; }
+.existing-summary { border-top: 1px solid rgba(248,247,244,0.1); padding-top: 2.5rem; font-size: clamp(1.1rem, 1.8vw, 1.5rem); font-style: italic; color: rgba(248,247,244,0.55); font-family: var(--serif); line-height: 1.6; }
+.existing-summary strong { color: #f8f7f4; font-style: normal; }
+#solution { background: var(--bg); }
+.solution-one-liner { font-size: clamp(1.6rem, 3vw, 2.5rem); font-weight: 400; line-height: 1.5; margin-bottom: 3rem; }
+.solution-one-liner em { font-style: italic; color: var(--accent); }
+.solution-detail { font-size: 0.98rem; color: var(--mid); line-height: 1.85; max-width: 620px; padding-left: 2rem; border-left: 1px solid var(--border); }
+#closing { background: var(--fg); color: var(--bg); text-align: center; padding: 9rem 2rem; }
+.closing-kicker { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(248,247,244,0.28); margin-bottom: 2rem; }
+.closing-title { font-family: var(--serif); font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 400; line-height: 1.35; max-width: 640px; margin: 0 auto; color: rgba(248,247,244,0.88); }
+.closing-title em { font-style: italic; color: var(--accent); }
+footer { padding: 2rem 3rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.footer-mark { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; color: var(--dim); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.75s ease, transform 0.75s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+@media (max-width: 680px) {
+  nav { padding: 1rem 1.5rem; }
+  .nav-links { display: none; }
+  .stat-row { grid-template-columns: 1fr 1fr; }
+  .behaviour-grid { grid-template-columns: 1fr; }
+  .compare-grid { grid-template-columns: 1fr; }
+  .evidence-item-dark, .evidence-item-light { grid-template-columns: 2rem 1fr; }
+  .ev-source, .ev-source-light { display: none; }
+  footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+  .hero-scroll { display: none; }
+  .container, .container-wide { padding: 0 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <span class="nav-mark">GADget</span>
+  <ul class="nav-links">
+    <li><a href="#scale">Scale</a></li>
+    <li><a href="#pain">The Pain</a></li>
+    <li><a href="#behaviour">Behaviour</a></li>
+    <li><a href="#existing">Alternatives</a></li>
+    <li><a href="#solution">Solution</a></li>
+  </ul>
+</nav>
+
+<section id="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Diabetes &middot; India &middot; Monitoring</p>
+    <h1 class="hero-title">77 million people.<br /><em>Daily pain.</em><br />No good option.</h1>
+    <p class="hero-sub">India is the diabetes capital of the world. Every diabetic manages their condition through a ritual that is invasive, expensive, and easy to skip &mdash; and the alternatives do not fix it.</p>
+  </div>
+  <span class="hero-scroll">Scroll</span>
+</section>
+
+<hr />
+
+<section id="scale">
+  <div class="container">
+    <p class="label">01 &mdash; The scale</p>
+    <p class="scale-intro reveal">
+      India has <strong>77 million diagnosed diabetics</strong> &mdash; the second largest population globally. By 2045, that number crosses <strong>134 million.</strong> This is not an emerging problem. It is already the largest chronic disease burden in the country.
+    </p>
+    <div class="stat-row reveal">
+      <div class="stat-item">
+        <div class="stat-num stat-accent">77M</div>
+        <div class="stat-desc">Diabetics in<br />India today</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">134M</div>
+        <div class="stat-desc">Projected<br />by 2045</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num stat-accent">#2</div>
+        <div class="stat-desc">Globally by<br />diabetic population</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">57%</div>
+        <div class="stat-desc">Cases still<br />undiagnosed</div>
+      </div>
+    </div>
+    <p class="label">Why monitoring is non-negotiable</p>
+    <div class="evidence-list reveal">
+      <div class="evidence-item-dark">
+        <span class="ev-num">01</span>
+        <p class="ev-text-dark">Uncontrolled glucose is the primary driver of <strong>kidney failure, adult blindness, nerve damage, and cardiovascular disease</strong> in Indian diabetics &mdash; all largely preventable with consistent monitoring.</p>
+        <span class="ev-source">IDF &middot; 2023</span>
+      </div>
+      <div class="evidence-item-dark">
+        <span class="ev-num">02</span>
+        <p class="ev-text-dark"><strong>Daily glucose tracking is the single most effective intervention</strong> for preventing complications &mdash; more than diet, exercise, or any single medication.</p>
+        <span class="ev-source">Lancet &middot; 2021</span>
+      </div>
+      <div class="evidence-item-dark">
+        <span class="ev-num">03</span>
+        <p class="ev-text-dark">Consistent monitors show <strong>0.5&ndash;1% lower HbA1c</strong>, enough to reduce complication risk by 25&ndash;30% over ten years. The data is unambiguous.</p>
+        <span class="ev-source">NEJM &middot; 2019</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr style="border-color: rgba(248,247,244,0.1);" />
+
+<section id="pain" style="background: var(--bg);">
+  <div class="container">
+    <p class="label">02 &mdash; The pain of current monitoring</p>
+    <p class="pain-lead reveal">
+      The standard method &mdash; finger-prick glucometry &mdash; requires <em>puncturing your fingertip with a lancet</em> multiple times every day, for the rest of your life.
+    </p>
+    <div class="evidence-list-light reveal">
+      <div class="evidence-item-light">
+        <span class="ev-num-light">01</span>
+        <p class="ev-text-light">Recommended frequency is 2&ndash;4 tests daily &mdash; up to <strong>1,460 lancet punctures per year.</strong> Each requires a blood-soaked disposable strip that is discarded immediately.</p>
+        <span class="ev-source-light">ADA Guidelines</span>
+      </div>
+      <div class="evidence-item-light">
+        <span class="ev-num-light">02</span>
+        <p class="ev-text-light"><strong>Pain aversion and needle anxiety</strong> are the primary self-reported barriers to compliance. Not cost. Not knowledge. <em>Pain.</em></p>
+        <span class="ev-source-light">Diabetic Med &middot; 2022</span>
+      </div>
+      <div class="evidence-item-light">
+        <span class="ev-num-light">03</span>
+        <p class="ev-text-light">Long-term lancet use causes <strong>fingertip scarring and peripheral nerve desensitisation</strong> &mdash; the very condition patients are trying to prevent through monitoring.</p>
+        <span class="ev-source-light">J Diabetes Sci &middot; 2020</span>
+      </div>
+      <div class="evidence-item-light">
+        <span class="ev-num-light">04</span>
+        <p class="ev-text-light">The glucometer strip market costs patients <strong>&#8377;4,500/month in consumables alone</strong> &mdash; a recurring cost borne disproportionately by middle-income Indian households with no ceiling.</p>
+        <span class="ev-source-light">Market analysis</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr />
+
+<section id="behaviour" style="background: #f0ede6;">
+  <div class="container">
+    <p class="label">03 &mdash; What patients actually do</p>
+    <p class="behaviour-intro reveal">
+      Because the current method is painful and expensive, most Indian diabetics are <em>systematically under-monitoring</em>. The downstream effects are documented and severe.
+    </p>
+    <div class="behaviour-grid reveal">
+      <div class="beh-card">
+        <div class="beh-pct">68%</div>
+        <p class="beh-desc"><strong>of Indian diabetics test fewer than once per week</strong> &mdash; far below the recommended 2&ndash;4 times daily.</p>
+        <p class="beh-source">ICMR Survey &middot; 2022</p>
+      </div>
+      <div class="beh-card">
+        <div class="beh-pct">42%</div>
+        <p class="beh-desc"><strong>have never used a glucometer</strong> despite a formal diagnosis. Primary barriers: pain, cost, inconvenience &mdash; in that order.</p>
+        <p class="beh-source">DMAI Report &middot; 2023</p>
+      </div>
+      <div class="beh-card">
+        <div class="beh-pct">3&times;</div>
+        <p class="beh-desc">Higher hospitalisation rate among those testing fewer than twice a week vs. consistent monitors. Avoidable at scale.</p>
+        <p class="beh-source">Lancet Regional Health &middot; 2022</p>
+      </div>
+      <div class="beh-card">
+        <div class="beh-pct">&#8377;35K</div>
+        <p class="beh-desc"><strong>Average annual out-of-pocket cost</strong> of managing a single diabetic complication &mdash; preventable with consistent monitoring.</p>
+        <p class="beh-source">WHO India &middot; 2021</p>
+      </div>
+    </div>
+    <div class="consequence-block reveal">
+      <p class="consequence-title">Downstream consequences of under-monitoring</p>
+      <div class="consequence-item">Diabetic retinopathy &mdash; leading cause of adult blindness in India (4.2M active cases)</div>
+      <div class="consequence-item">Diabetic nephropathy &mdash; fastest growing driver of kidney failure requiring dialysis</div>
+      <div class="consequence-item">Undetected hypoglycaemia &mdash; causes accidents, loss of consciousness, and cardiac events</div>
+      <div class="consequence-item">Delayed insulin adjustment &mdash; silent damage accumulates over months before clinical symptoms appear</div>
+    </div>
+  </div>
+</section>
+
+<hr />
+
+<section id="existing" style="background: var(--fg); color: var(--bg);">
+  <div class="container-wide">
+    <p class="label" style="color: rgba(248,247,244,0.3);">04 &mdash; Why alternatives fail</p>
+    <p class="existing-intro reveal">
+      Two alternatives exist. Neither resolves the compliance problem. One is affordable but painful; the other is continuous but 3.5&times; more expensive &mdash; and still requires a skin-piercing sensor.
+    </p>
+    <div class="compare-grid reveal">
+      <div class="compare-col">
+        <div class="compare-head">
+          <div class="compare-product">Glucometer</div>
+          <div class="compare-price">&#8377;4,500</div>
+          <div class="compare-period">per month &middot; strips + lancets</div>
+        </div>
+        <div class="compare-rows">
+          <div class="compare-row">Non-invasive <span class="cr-val cr-no">&#x2715;</span></div>
+          <div class="compare-row">Continuous <span class="cr-val cr-no">&#x2715;</span></div>
+          <div class="compare-row">Affordable <span class="cr-val cr-yes">&#x2713;</span></div>
+          <div class="compare-row">Painless <span class="cr-val cr-no">&#x2715;</span></div>
+          <div class="compare-row">Reusable <span class="cr-val cr-yes">&#x2713;</span></div>
+        </div>
+        <div class="compare-fatal">
+          <div class="cf-label">Fatal flaw</div>
+          <p class="cf-text">Pain and needle aversion are the core compliance barriers. This solves neither.</p>
+        </div>
+      </div>
+      <div class="compare-col">
+        <div class="compare-head">
+          <div class="compare-product">CGM Patch (FreeStyle Libre)</div>
+          <div class="compare-price">&#8377;10,498</div>
+          <div class="compare-period">per month &middot; sensor every 14 days</div>
+        </div>
+        <div class="compare-rows">
+          <div class="compare-row">Non-invasive <span class="cr-val cr-no">&#x2715;</span></div>
+          <div class="compare-row">Continuous <span class="cr-val cr-yes">&#x2713;</span></div>
+          <div class="compare-row">Affordable <span class="cr-val cr-no">&#x2715;</span></div>
+          <div class="compare-row">Painless <span class="cr-val cr-no">&#x2715; skin pierce</span></div>
+          <div class="compare-row">Reusable <span class="cr-val cr-yes">&#x2713;</span></div>
+        </div>
+        <div class="compare-fatal">
+          <div class="cf-label">Fatal flaw</div>
+          <p class="cf-text">Requires sub-skin sensor insertion every two weeks. Costs 3.5&times; more than GADget &mdash; excluding the vast majority of the Indian market.</p>
+        </div>
+      </div>
+      <div class="compare-col" style="border-right: 1px solid rgba(248,247,244,0.1);">
+        <div class="compare-head" style="background: rgba(200,70,43,0.06); border-bottom-color: rgba(200,70,43,0.2);">
+          <div class="compare-product" style="color: var(--accent);">GADget</div>
+          <div class="compare-price">&#8377;3,000</div>
+          <div class="compare-period">per month</div>
+        </div>
+        <div class="compare-rows">
+          <div class="compare-row">Non-invasive <span class="cr-val cr-yes">&#x2713;</span></div>
+          <div class="compare-row">Continuous <span class="cr-val cr-yes">&#x2713;</span></div>
+          <div class="compare-row">Affordable <span class="cr-val cr-yes">&#x2713;</span></div>
+          <div class="compare-row">Painless <span class="cr-val cr-yes">&#x2713;</span></div>
+          <div class="compare-row">Reusable <span class="cr-val cr-yes">&#x2713;</span></div>
+        </div>
+        <div class="compare-fatal" style="background: rgba(200,70,43,0.05); border-top-color: rgba(200,70,43,0.15);">
+          <div class="cf-label">The gap this fills</div>
+          <p class="cf-text">The only option that is simultaneously non-invasive, continuous, and priced for India.</p>
+        </div>
+      </div>
+    </div>
+    <p class="existing-summary reveal">
+      The compliance crisis persists because <strong>no existing product removes both barriers at once.</strong> Every patient today must choose between a product that is affordable but hurts and one that is painless but costs 3.5&times; more.
+    </p>
+  </div>
+</section>
+
+<hr style="border-color: rgba(248,247,244,0.1);" />
+
+<section id="solution" style="background: var(--fg);">
+  <div class="container">
+    <p class="label" style="color: rgba(248,247,244,0.3);">05 &mdash; One line on what we are building</p>
+    <p class="reveal" style="font-family: var(--serif); font-size: clamp(1.6rem, 3vw, 2.5rem); font-weight: 400; line-height: 1.5; margin-bottom: 3rem; color: rgba(248,247,244,0.9);">
+      GADget reads glucose through sweat &mdash; <em style="font-style: italic; color: var(--accent);">no needle, no patch, no pain</em> &mdash; via a smartwatch biosensor at &#8377;3,000/month.
+    </p>
+    <p class="reveal" style="font-family: var(--serif); font-size: 0.98rem; color: rgba(248,247,244,0.38); line-height: 1.9; max-width: 580px; padding-left: 2rem; border-left: 1px solid rgba(248,247,244,0.1);">
+      Stencil-printed carbon electrodes in a disposable sweat-absorption layer, packaged as a smartwatch, sending continuous readings to a mobile app via IoT. We are building this now.
+    </p>
+  </div>
+</section>
+
+<section id="closing" style="background: var(--fg); color: var(--bg); text-align: center; padding: 9rem 2rem;">
+  <p class="closing-kicker">The problem is real. The gap is clear.</p>
+  <h2 class="closing-title">
+    77 million people are under-monitoring because <em>every option asks too much of them.</em>
+  </h2>
+</section>
+
+<footer>
+  <span class="footer-mark">GADget &middot; 2026 &middot; Day 2</span>
+  <span class="footer-mark" style="font-style: italic;">No needle. No patch. No compromise.</span>
+</footer>
+
+<script>
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 30); });
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
